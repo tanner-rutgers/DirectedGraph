@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class Graph {
 
-    private Map<String, LinkedList<Neighbour>> adjMap;          // Adjacency list of nodes in graph
+    private Map<String, ArrayList<Neighbour>> adjMap;          // Adjacency list of nodes in graph
     private Map<String, Map<String, Path>> shortestPathMap;     // Computed shortest paths in map
 
     /**
@@ -25,7 +25,7 @@ public class Graph {
      *              Source_Node Dest_Node weight
      */
     public Graph(String filename) {
-        adjMap = new HashMap<String, LinkedList<Neighbour>>();
+        adjMap = new HashMap<String, ArrayList<Neighbour>>();
         shortestPathMap = new HashMap<String, Map<String,Path>>();
 
         try {
@@ -35,9 +35,8 @@ public class Graph {
             int graphSize = scan.nextInt();
 
             // Read in all vertices
-            adjMap = new HashMap<String, LinkedList<Neighbour>>(graphSize);
             for (int i = 0; i < graphSize; i++) {
-                adjMap.put(scan.next(), new LinkedList<Neighbour>());
+                adjMap.put(scan.next(), new ArrayList<Neighbour>());
             }
 
             // Read in all pairs of vertices
@@ -45,12 +44,17 @@ public class Graph {
                 addNeighbour(scan.next(), scan.next(), scan.nextInt());
             }
 
+            // Sort neighbours in natural order
+            for (ArrayList<Neighbour> neighbours : adjMap.values()) {
+                Collections.sort(neighbours);
+            }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public Map<String, LinkedList<Neighbour>> getAdjMap() { return adjMap; }
+    public Map<String, ArrayList<Neighbour>> getAdjMap() { return adjMap; }
 
     /**
      * Add a neighbour entry for the given source node
@@ -65,7 +69,7 @@ public class Graph {
 
         Neighbour newNeighbour = new Neighbour(dest, weight);
         if (!adjMap.get(source).contains(newNeighbour)) {
-            adjMap.get(source).addFirst(newNeighbour);
+            adjMap.get(source).add(newNeighbour);
         }
     }
 
@@ -91,8 +95,6 @@ public class Graph {
         return shortest == null ? null : shortest.getPath();
     }
 
-
-
     /**
      * Determine and return the Path object representing the shortest path
      * between the source and destination nodes, using Dijkstra's algorithm
@@ -113,5 +115,44 @@ public class Graph {
         return shortestPathMap.get(source).get(dest);
     }
 
+    /**
+     * Traverse the graph using DFS, printing the resulting path
+     */
+    public void dfs(String node) {
+        Set<String> visited = new HashSet<String>();
+        dfs_r(node, visited);
+        System.out.println();
+    }
 
+    private void dfs_r(String node, Set<String> visited) {
+        visited.add(node);
+        System.out.print(node + " ");
+        for (Neighbour n : adjMap.get(node)) {
+            if (!visited.contains(n.getDest())) {
+                dfs_r(n.getDest(), visited);
+            }
+        }
+    }
+
+    /**
+     * Traverse the graph using BFS, printing the resulting path
+     * @param start
+     */
+    public void bfs(String start) {
+        Queue<String> nodeQueue = new LinkedList<String>();
+        Set<String> visited = new HashSet<String>();
+        nodeQueue.add(start);
+        visited.add(start);
+        while (!nodeQueue.isEmpty()) {
+            String node = nodeQueue.remove();
+            System.out.print(node + " ");
+            for (Neighbour n : adjMap.get(node)) {
+                if (!visited.contains(n.getDest())) {
+                    nodeQueue.add(n.getDest());
+                    visited.add(n.getDest());
+                }
+            }
+        }
+        System.out.println();
+    }
 }

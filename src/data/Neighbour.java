@@ -5,7 +5,7 @@ package data;
  * containing the destination node and the weight of the path
  * to that node.
  */
-public class Neighbour {
+public class Neighbour implements Comparable<Neighbour>{
     private String dest;
     private int weight = -1;
 
@@ -44,5 +44,13 @@ public class Neighbour {
             return false;
 
         return true;
+    }
+
+    @Override
+    public int compareTo(Neighbour o) {
+        if (dest != null) {
+            return dest.compareTo(o.getDest());
+        }
+        return -1;
     }
 }
